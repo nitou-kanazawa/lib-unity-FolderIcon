@@ -1,6 +1,6 @@
 # FolderIcon
 
-<img src="docs/images/header.png" width=800>
+[![license](https://img.shields.io/badge/LICENSE-MIT-green.svg)](LICENSE)
 
 ## 開発環境
 - Unity `6000.0.30f1`
