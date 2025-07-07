@@ -1,0 +1,18 @@
+{
+    "name": "FolderIcon.Editor",
+    "rootNamespace": "FolderIcon.Editor",
+    "references": [
+        "GUID:b081b8c1691e57b418f52170aa88d60e"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
