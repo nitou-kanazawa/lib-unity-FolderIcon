@@ -14,9 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _entryStore:
     _entries:
-    - _id: 
-      _isEnabled: 0
+    - _isEnabled: 1
       _pattern:
-        _value: 
-        _type: 0
-      _iconTexture: {fileID: 0}
+        _value: Scripts
+        _type: 1
+      _iconTexture: {fileID: 2800000, guid: 6e5375f7dc7dd98459edcd2fb9a3f8b5, type: 3}
+  _isEnabled: 1

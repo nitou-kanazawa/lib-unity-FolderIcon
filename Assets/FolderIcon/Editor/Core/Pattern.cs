@@ -38,5 +38,11 @@ namespace FolderIcon.Editor.Core
             // 正規表現として有効かチェック
             return GetRegex() != null;
         }
+
+        public bool IsMatch(string path)
+        {
+            if (!IsValid()) return false;
+            return GetRegex().IsMatch(path);
+        }
     }
 }

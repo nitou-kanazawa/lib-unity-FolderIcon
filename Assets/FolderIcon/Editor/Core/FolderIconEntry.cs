@@ -5,18 +5,20 @@ namespace FolderIcon.Editor.Core
 {
 
     [Serializable]
-    public class FolderIconEntry
+    internal class FolderIconEntry
     {
-        [HideInInspector]
-        [SerializeField] private string _id = Guid.NewGuid().ToString();
         [SerializeField] private bool _isEnabled = true;
         [SerializeField] private Pattern _pattern;
-        [SerializeField] private Texture2D _iconTexture;
+        [SerializeField] private Texture2D _iconTexture = null;
 
         public bool IsEnabled
         {
             get => _isEnabled;
             set => _isEnabled = value;
         }
+
+        public Pattern Pattern => _pattern;
+
+        public Texture2D IconTexture => _iconTexture;
     }
 }

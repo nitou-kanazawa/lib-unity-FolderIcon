@@ -46,7 +46,8 @@ namespace FolderIcon.Editor.Core.Settings
 
         #region Static
 
-        private static readonly string SettingPath = "Project/FolderIcon/Editor";
+        // NOTE: 設定パスは、ProjectSettingsフォルダ直下に配置する
+        private static readonly string SettingPath = "Project/FolderIcon";
 
         [SettingsProvider]
         public static SettingsProvider CreateSettingProvider() {
