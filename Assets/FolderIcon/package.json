@@ -1,0 +1,14 @@
+{
+  "name": "com.nitou.foldericon",
+  "displayName": "Folder Icon",
+  "version": "1.0.0",
+  "unity": "6000.0",
+  "description": "Custom folder icon for Unity projects.",
+  "keywords": [],
+  "author": {
+    "name": "Nitou",
+    "url": "https://github.com/nitou-kanazawa"
+  },
+  "category": "Editor",
+  "dependencies": {  }
+}
