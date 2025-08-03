@@ -1,5 +1,7 @@
 # Folder Icon
 
+プロジェクトのフォルダアイコンをカスタマイズできる Unity Package．
+
 [![license](https://img.shields.io/badge/LICENSE-MIT-green.svg)](LICENSE)
 
 ## 開発環境
