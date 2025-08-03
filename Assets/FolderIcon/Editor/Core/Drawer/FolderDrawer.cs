@@ -2,7 +2,6 @@
 using UnityEngine;
 using UnityEditor;
 using FolderIcon.Editor.Core.Settings;
-using System.IO;
 
 namespace FolderIcon.Editor.Core.Drawer
 {
@@ -13,15 +12,20 @@ namespace FolderIcon.Editor.Core.Drawer
         {
             Debug.Log("FolderDrawer initialized");
             EditorApplication.projectWindowItemOnGUI += OnProjectWindowItemGUI;
+
         }
 
         private static void OnProjectWindowItemGUI(string guid, Rect selectionRect)
         {
+            if (Application.isPlaying || Event.current.type != EventType.Repaint)
+                return;
+
+            // Check if the item is a folder
             var path = AssetDatabase.GUIDToAssetPath(guid);
-            if (string.IsNullOrEmpty(path) ||
-                Event.current.type != EventType.Repaint ||
-                !File.GetAttributes(path).HasFlag(FileAttributes.Directory) ||
-                !FolderIconSettingsSO.instance.IsEnabled)
+            if (!AssetDatabase.IsValidFolder(path))
+                return;
+
+            if (!FolderIconSettingsSO.instance.IsEnabled)
                 return;
 
             // FIXME: 
@@ -33,6 +37,16 @@ namespace FolderIcon.Editor.Core.Drawer
 
             DrawFolder(entry, selectionRect);
         }
+
+        private static bool IsMainListAsset(Rect rect)
+        {
+            // Don't draw details if project view shows large preview icons:
+            if (rect.height > 20)
+                return false;
+
+            return true;
+        }
+
 
         private static void DrawFolder(FolderIconEntry entry, Rect rect)
         {
@@ -52,6 +66,38 @@ namespace FolderIcon.Editor.Core.Drawer
                 return new Rect(x, y, size, size);
             }
         }
+
+
+        #region Utility Methods
+
+        /// <summary>
+        /// Check if the current rect is the side view of folders
+        /// </summary>
+        /// <param name="rect">Current rect</param>
+        public static bool IsSideView(Rect rect)
+        {
+            // Check if the item is in the side view
+#if UNITY_2019_3_OR_NEWER
+            return rect.x != 14;
+#else
+            return rect.x != 13;
+#endif
+        }
+
+        /// <summary>
+        /// Check if the current rect is in tree view
+        /// </summary>
+        /// <param name="rect">Current rect</param>
+        private static bool IsTreeView(Rect rect)
+        {
+            // Check if the item is in the tree view
+            return rect.width > rect.height;
+        }
+        #endregion
+
     }
 }
 #endif
+
+
+// 参考資料：[Unity-Folder-Icons/FolderIcons/Editor/FolderIconGUI.cs](https://github.com/WooshiiDev/Unity-Folder-Icons/blob/main/FolderIcons/Editor/FolderIconGUI.cs)

@@ -11,13 +11,18 @@ namespace FolderIcon.Editor.Core.Settings
     )]
     internal sealed class FolderIconSettingsSO : ScriptableSingleton<FolderIconSettingsSO>
     {
+        [SerializeField] private bool _isEnabled = true;
         [SerializeField] private FolderIconEntryStore _entryStore;
 
-        [SerializeField] private bool _isEnabled = true;
-
-        public FolderIconEntryStore EntryStore => _entryStore;
-
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsEnabled => _isEnabled;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public FolderIconEntryStore EntryStore => _entryStore;
 
 
         public void Save() => Save(this);
