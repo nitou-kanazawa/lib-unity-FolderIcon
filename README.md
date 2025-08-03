@@ -1,4 +1,4 @@
-# FolderIcon
+# Folder Icon
 
 [![license](https://img.shields.io/badge/LICENSE-MIT-green.svg)](LICENSE)
 
