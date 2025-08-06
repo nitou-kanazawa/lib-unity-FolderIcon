@@ -14,6 +14,10 @@ namespace FolderIcon.Editor.Core.Drawer
 
 
     /// <summary>
+    /// Unityプロジェクトウィンドウでフォルダアイコンを描画するクラス．
+    /// 各表示モード（ツリービュー、リストビュー、グリッドビュー）に応じて
+    /// 適切な位置とサイズでアイコンを描画する．
+    /// </summary>
     [InitializeOnLoad]
     internal static class FolderDrawer
     {
@@ -35,9 +39,10 @@ namespace FolderIcon.Editor.Core.Drawer
             if (!FolderIconSettingsSO.instance.IsEnabled)
                 return;
 
-            // FIXME: 
-            // - Dictonay管理で検索効率を改善
+            // TODO: パフォーマンス改善の検討
+            // - Dictionary管理で検索効率を改善
             // - 描画の効率化について調査
+            // - キャッシュ機構の導入を検討
             var entry = FolderIconSettingsSO.instance.EntryStore.GetEntry(path);
             if (entry == null)
                 return;
@@ -54,7 +59,7 @@ namespace FolderIcon.Editor.Core.Drawer
             var viewMode = GetViewMode(rect);
             var imageRect = GetIconRect(rect, viewMode);
 
-            // 
+            // アイコンテクスチャを描画
             GUI.DrawTexture(imageRect, entry.IconTexture, ScaleMode.ScaleToFit, true);
         }
 
@@ -90,11 +95,44 @@ namespace FolderIcon.Editor.Core.Drawer
         {
             return viewMode switch
             {
-                FolderIconViewMode.TreeView => new Rect(rect.x + 2, rect.y - 1, rect.height + 2, rect.height + 2),
-                FolderIconViewMode.ContentListView => new Rect(rect.x - 1, rect.y - 1, rect.height + 2, rect.height + 2),
-                FolderIconViewMode.ContentGridView => new Rect(rect.x - 1, rect.y - 1, rect.width + 2, rect.width + 2),
-                _ => throw new System.Exception("Invalid view mode")
+                FolderIconViewMode.TreeView => GetTreeViewIconRect(rect),
+                FolderIconViewMode.ContentListView => GetListViewIconRect(rect),
+                FolderIconViewMode.ContentGridView => GetGridViewIconRect(rect),
+                _ => throw new System.ArgumentException($"Invalid view mode: {viewMode}", nameof(viewMode))
             };
+        }
+
+        /// <summary>
+        /// ツリービュー用のアイコン描画領域を計算する．
+        /// </summary>
+        private static Rect GetTreeViewIconRect(Rect rect)
+        {
+            float iconSize = rect.height + FolderIconConstants.ICON_SIZE_EXPANSION;
+            float x = rect.x + FolderIconConstants.TREE_VIEW_X_OFFSET;
+            float y = rect.y + FolderIconConstants.ICON_Y_OFFSET;
+            return new Rect(x, y, iconSize, iconSize);
+        }
+
+        /// <summary>
+        /// リストビュー用のアイコン描画領域を計算する．
+        /// </summary>
+        private static Rect GetListViewIconRect(Rect rect)
+        {
+            float iconSize = rect.height + FolderIconConstants.ICON_SIZE_EXPANSION;
+            float x = rect.x + FolderIconConstants.ICON_X_OFFSET;
+            float y = rect.y + FolderIconConstants.ICON_Y_OFFSET;
+            return new Rect(x, y, iconSize, iconSize);
+        }
+
+        /// <summary>
+        /// グリッドビュー用のアイコン描画領域を計算する．
+        /// </summary>
+        private static Rect GetGridViewIconRect(Rect rect)
+        {
+            float iconSize = rect.width + FolderIconConstants.ICON_SIZE_EXPANSION;
+            float x = rect.x + FolderIconConstants.ICON_X_OFFSET;
+            float y = rect.y + FolderIconConstants.ICON_Y_OFFSET;
+            return new Rect(x, y, iconSize, iconSize);
         }
         #endregion
     }
