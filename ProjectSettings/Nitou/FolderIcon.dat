@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 78845b16d25367b41a520c4aefa26294, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _isEnabled: 1
   _entryStore:
     _entries:
     - _isEnabled: 1
@@ -24,4 +25,3 @@ MonoBehaviour:
         _value: Scenes
         _type: 1
       _iconTexture: {fileID: 2800000, guid: e883a49e0791ffb4da111b699600a550, type: 3}
-  _isEnabled: 1

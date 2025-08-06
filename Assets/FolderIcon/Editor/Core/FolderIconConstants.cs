@@ -4,14 +4,22 @@ using UnityEditor;
 
 namespace FolderIcon.Editor
 {
-    public class FolderIconConstants : MonoBehaviour
+    public static class FolderIconConstants
     {
-
         // GUI
         public const float MAX_TREE_WIDTH = 118f;
         public const float MAX_PROJECT_WIDTH = 96f;
         public const float MAX_TREE_HEIGHT = 16f;
         public const float MAX_PROJECT_HEIGHT = 110f;
+
+        // Icon Drawing
+        public const float DEFAULT_ICON_SIZE = 16f;
+        public const float ICON_PADDING = 2f;
+
+        public const float GRID_VIEW_THRESHOLD = 20f;
+        public const float CONTENT_VIEW_X_THRESHOLD = 20f;
+
+        public const float TREE_VIEW_WIDTH_THRESHOLD = 200f;
 
         // Color
         public static readonly Color SelectedColor = new Color(0.235f, 0.360f, 0.580f);
