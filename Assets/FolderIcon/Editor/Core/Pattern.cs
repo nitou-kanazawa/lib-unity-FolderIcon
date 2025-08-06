@@ -19,30 +19,67 @@ namespace FolderIcon.Editor.Core
         [SerializeField] internal string _value;
         [SerializeField] internal MatchType _type = MatchType.FullMatch;
 
+        private Regex _compiledRegex;
+        private bool _isRegexCompiled = false;
+
+        /// <summary>
+        /// 正規表現パターンを取得する（キャッシュ付き）
+        /// </summary>
         public Regex GetRegex()
         {
-            var regexString = _type switch
+            if (_isRegexCompiled && _compiledRegex != null)
+                return _compiledRegex;
+
+            try
             {
-                MatchType.FullMatch => $"^{_value}$",
-                MatchType.PartialMatch => _value,
-                _ => throw new NotImplementedException($"MatchType {_value} is not implemented.")
-            };
-            return new Regex(regexString, RegexOptions.Compiled);
+                var regexString = _type switch
+                {
+                    MatchType.FullMatch => $"^{_value}$",
+                    MatchType.PartialMatch => _value,
+                    _ => throw new NotImplementedException($"MatchType {_type} is not implemented.")
+                };
+
+                _compiledRegex = new Regex(regexString, RegexOptions.Compiled | RegexOptions.IgnoreCase);
+                _isRegexCompiled = true;
+                return _compiledRegex;
+            }
+            catch (ArgumentException)
+            {
+                // 無効な正規表現パターンの場合
+                _compiledRegex = null;
+                _isRegexCompiled = true;
+                return null;
+            }
         }
 
+        /// <summary>
+        /// パターンが有効かどうかをチェックする
+        /// </summary>
         public bool IsValid()
         {
             if (string.IsNullOrEmpty(_value))
                 return false;
 
-            // 正規表現として有効かチェック
             return GetRegex() != null;
         }
 
-        public bool IsMatch(string path)
+        /// <summary>
+        /// フォルダ名がパターンにマッチするかチェックする
+        /// </summary>
+        /// <param name="folderPath">フォルダのパス</param>
+        /// <returns>マッチする場合はtrue</returns>
+        public bool IsMatch(string folderPath)
         {
-            if (!IsValid()) return false;
-            return GetRegex().IsMatch(path);
+            if (!IsValid())
+                return false;
+
+            // パスからフォルダ名のみを抽出
+            var folderName = System.IO.Path.GetFileName(folderPath);
+            if (string.IsNullOrEmpty(folderName))
+                return false;
+
+            var regex = GetRegex();
+            return regex?.IsMatch(folderName) ?? false;
         }
     }
 }

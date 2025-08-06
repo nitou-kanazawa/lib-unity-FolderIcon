@@ -11,7 +11,7 @@ namespace FolderIcon.Editor.Core.Settings
     {
         private UnityEditor.Editor _editor;
 
-        public FolderIconSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) 
+        public FolderIconSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null)
             : base(path, scopes, keywords)
         {
         }
@@ -39,7 +39,8 @@ namespace FolderIcon.Editor.Core.Settings
             // 設定ファイルの標準インスペクタを表示
             _editor.OnInspectorGUI();
 
-            if (EditorGUI.EndChangeCheck()) {
+            if (EditorGUI.EndChangeCheck())
+            {
                 FolderIconSettingsSO.instance.Save();
             }
         }
@@ -50,7 +51,8 @@ namespace FolderIcon.Editor.Core.Settings
         private static readonly string SettingPath = "Project/FolderIcon";
 
         [SettingsProvider]
-        public static SettingsProvider CreateSettingProvider() {
+        public static SettingsProvider CreateSettingProvider()
+        {
             // Note: 第三引数のkeywordsは、検索時にこの設定項目を引っかけるためのキーワード
             return new FolderIconSettingsProvider(SettingPath, SettingsScope.Project, null);
         }

@@ -18,7 +18,7 @@ MonoBehaviour:
     - _isEnabled: 1
       _pattern:
         _value: Scripts
-        _type: 1
+        _type: 0
       _iconTexture: {fileID: 2800000, guid: 6e5375f7dc7dd98459edcd2fb9a3f8b5, type: 3}
     - _isEnabled: 1
       _pattern:

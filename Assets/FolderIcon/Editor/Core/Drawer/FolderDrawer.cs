@@ -39,10 +39,7 @@ namespace FolderIcon.Editor.Core.Drawer
             if (!FolderIconSettingsSO.instance.IsEnabled)
                 return;
 
-            // TODO: パフォーマンス改善の検討
-            // - Dictionary管理で検索効率を改善
-            // - 描画の効率化について調査
-            // - キャッシュ機構の導入を検討
+            // フォルダパスにマッチするアイコンエントリを取得
             var entry = FolderIconSettingsSO.instance.EntryStore.GetEntry(path);
             if (entry == null)
                 return;
