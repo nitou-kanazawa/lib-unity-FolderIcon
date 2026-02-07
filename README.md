@@ -28,9 +28,24 @@
   - 最大ルール数
   - フォルダのみ対象（ファイルは非対応）
 
-## 🌀 導入方法
 
-UPM Package
-Package Manager を開き，「git packageから追加」で `https://github.com/nitou-kanazawa/lib-unity-FolderIcon.git?path=Assets/FolderIcon` を指定します．
+## 🌀 セットアップ
 
+#### インストール
+
+1. Window > Package ManagerからPackage Managerを開く
+2. 「+」ボタン > Add package from git URL
+3. 以下のURLを入力する
+```
+https://github.com/nitou-kanazawa/lib-unity-FolderIcon.git?path=Assets/FolderIcon
+```
+
+あるいはPackages/manifest.jsonを開き、dependenciesブロックに以下を追記
+```
+{
+    "dependencies": {
+        "jp.nitou.flder-icon": "https://github.com/nitou-kanazawa/lib-unity-FolderIcon.git?path=Assets/FolderIcon"
+    }
+}
+```
 
