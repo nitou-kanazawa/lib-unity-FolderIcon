@@ -1,33 +1,38 @@
+using System.Collections.Generic;
 using UnityEditor;
-using UnityEngine;
-using System.IO;
 
-namespace FolderIcon.Editor.Core
+namespace FolderIcon.Editor
 {
-    public static class FolderIconContextMenu
+    /// <summary>
+    /// フォルダの右クリックメニューからアイコン設定ウィンドウを開く（仕様書 §7.1）．
+    /// 主導線．複数フォルダ選択にも対応する．
+    /// </summary>
+    internal static class FolderIconContextMenu
     {
-        [MenuItem("Assets/フォルダアイコンを設定", false, 2000)]
-        private static void SetFolderIcon()
+        private const string MenuPath = "Assets/Set Folder Icon...";
+
+        [MenuItem(MenuPath, false, 2000)]
+        private static void Open()
         {
-            // 選択されたフォルダのパスを取得
-            var selected = Selection.activeObject;
-            var path = AssetDatabase.GetAssetPath(selected);
-            if (!AssetDatabase.IsValidFolder(path))
-            {
-                EditorUtility.DisplayDialog("フォルダ選択", "フォルダを選択してください。", "OK");
-                return;
-            }
-            // アイコン設定ウィンドウを表示
-            FolderIconSettingWindow.ShowWindow(path);
+            FolderIconSettingWindow.Open(GetSelectedFolderPaths());
         }
 
-        [MenuItem("Assets/フォルダアイコンを設定", true)]
-        private static bool SetFolderIcon_Validate()
+        [MenuItem(MenuPath, true)]
+        private static bool Validate()
         {
-            var selected = Selection.activeObject;
-            if (selected == null) return false;
-            var path = AssetDatabase.GetAssetPath(selected);
-            return AssetDatabase.IsValidFolder(path);
+            return GetSelectedFolderPaths().Count > 0;
+        }
+
+        private static List<string> GetSelectedFolderPaths()
+        {
+            var paths = new List<string>();
+            foreach (var obj in Selection.objects)
+            {
+                var path = AssetDatabase.GetAssetPath(obj);
+                if (AssetDatabase.IsValidFolder(path) && !paths.Contains(path))
+                    paths.Add(path);
+            }
+            return paths;
         }
     }
 }

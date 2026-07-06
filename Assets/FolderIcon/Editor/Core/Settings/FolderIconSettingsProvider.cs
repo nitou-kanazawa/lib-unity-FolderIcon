@@ -1,62 +1,51 @@
-#if UNITY_EDITOR
-using System.Collections.Generic;
-using System.IO;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using UnityEditor;
 
-namespace FolderIcon.Editor.Core.Settings
+namespace FolderIcon.Editor
 {
+    /// <summary>
+    /// ProjectSettingsウィンドウに設定画面を表示するプロバイダ（仕様書 §7.2）．
+    /// M1では標準インスペクタの表示のみ．ReorderableList等の専用UIはM3で実装する．
+    /// </summary>
     internal sealed class FolderIconSettingsProvider : SettingsProvider
     {
         private UnityEditor.Editor _editor;
 
-        public FolderIconSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null)
-            : base(path, scopes, keywords)
+        private FolderIconSettingsProvider(string path, SettingsScope scopes)
+            : base(path, scopes)
         {
         }
 
-        /// <summary>
-        /// 設定ファイルのインスペクターを生成
-        /// </summary>
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
-            // NOTE: ScriptableSingletonを編集可能にする
-            var preferences = FolderIconSettingsSO.instance;
-            preferences.hideFlags = HideFlags.HideAndDontSave & ~HideFlags.NotEditable;
+            // ScriptableSingletonは既定でNotEditableのため、編集可能に変更する
+            var settings = FolderIconSettings.instance;
+            settings.hideFlags = HideFlags.HideAndDontSave & ~HideFlags.NotEditable;
 
-            // 設定ファイルの標準のインスペクターのエディタを生成
-            UnityEditor.Editor.CreateCachedEditor(preferences, null, ref _editor);
+            UnityEditor.Editor.CreateCachedEditor(settings, null, ref _editor);
         }
 
-        /// <summary>
-        /// 設定ファイルのインスペクターを表示
-        /// </summary>
         public override void OnGUI(string searchContext)
         {
+            if (_editor == null)
+                return;
+
             EditorGUI.BeginChangeCheck();
-
-            // 設定ファイルの標準インスペクタを表示
             _editor.OnInspectorGUI();
-
             if (EditorGUI.EndChangeCheck())
             {
-                FolderIconSettingsSO.instance.Save();
+                FolderIconSettings.instance.Save();
             }
         }
 
-        #region Static
-
-        // NOTE: 設定パスは、ProjectSettingsフォルダ直下に配置する
-        private static readonly string SettingPath = "Project/FolderIcon";
-
         [SettingsProvider]
-        public static SettingsProvider CreateSettingProvider()
+        public static SettingsProvider CreateSettingsProvider()
         {
-            // Note: 第三引数のkeywordsは、検索時にこの設定項目を引っかけるためのキーワード
-            return new FolderIconSettingsProvider(SettingPath, SettingsScope.Project, null);
+            return new FolderIconSettingsProvider("Project/Folder Icon", SettingsScope.Project)
+            {
+                keywords = new[] { "folder", "icon", "project window" },
+            };
         }
-        #endregion
     }
 }
-#endif

@@ -1,26 +1,26 @@
-#if UNITY_EDITOR
-using UnityEngine;
+using System;
 using UnityEditor;
-using FolderIcon.Editor.Core.Settings;
+using UnityEngine;
 
-namespace FolderIcon.Editor.Core.Drawer
+namespace FolderIcon.Editor
 {
-    internal enum FolderIconViewMode
-    {
-        TreeView,           // 階層ツリー表示
-        ContentListView,    // コンテンツリスト表示
-        ContentGridView,    // コンテンツグリッド表示
-    }
-
-
     /// <summary>
-    /// Unityプロジェクトウィンドウでフォルダアイコンを描画するクラス．
-    /// 各表示モード（ツリービュー、リストビュー、グリッドビュー）に応じて
-    /// 適切な位置とサイズでアイコンを描画する．
+    /// プロジェクトウィンドウのフォルダにカスタムアイコンを重ね描きするクラス（仕様書 §6）．
+    /// ツリービュー・リストビュー・グリッドビューの3表示形態に対応する．
     /// </summary>
     [InitializeOnLoad]
     internal static class FolderDrawer
     {
+        // 表示モード判定と位置調整の定数（実測による調整値）
+        private const float GridViewHeightThreshold = 20f;   // これより高い矩形はグリッドビュー
+        private const float TreeViewXThreshold = 20f;        // これ以下のxはツリービュー
+        private const float IconSizeExpansion = 2f;
+        private const float IconXOffset = -1f;
+        private const float IconYOffset = -1f;
+        private const float TreeViewXOffset = 2f;
+
+        private static bool _exceptionLogged;
+
         static FolderDrawer()
         {
             EditorApplication.projectWindowItemOnGUI += OnProjectWindowItemGUI;
@@ -28,113 +28,69 @@ namespace FolderIcon.Editor.Core.Drawer
 
         private static void OnProjectWindowItemGUI(string guid, Rect selectionRect)
         {
-            if (Application.isPlaying || Event.current.type != EventType.Repaint)
+            if (Event.current.type != EventType.Repaint)
                 return;
 
-            // Check if the item is a folder
-            var path = AssetDatabase.GUIDToAssetPath(guid);
-            if (!AssetDatabase.IsValidFolder(path))
-                return;
-
-            if (!FolderIconSettingsSO.instance.IsEnabled)
-                return;
-
-            // フォルダパスにマッチするアイコンエントリを取得
-            var entry = FolderIconSettingsSO.instance.EntryStore.GetEntry(path);
-            if (entry == null)
-                return;
-
-            DrawFolder(entry, selectionRect);
-        }
-
-        private static void DrawFolder(FolderIconEntry entry, Rect rect)
-        {
-            if (entry.IconTexture == null)
-                return;
-
-            // フォルダアイコンの描画領域を計算
-            var viewMode = GetViewMode(rect);
-            var imageRect = GetIconRect(rect, viewMode);
-
-            // アイコンテクスチャを描画
-            GUI.DrawTexture(imageRect, entry.IconTexture, ScaleMode.ScaleToFit, true);
-        }
-
-
-        #region View Mode
-
-        /// <summary>
-        /// アイコンの表示モードを判定する．
-        /// </summary>
-        /// <param name="rect">フォルダの矩形</param>
-        /// <returns>表示モード</returns>
-        private static FolderIconViewMode GetViewMode(Rect rect)
-        {
-            // Grid View
-            if (rect.height > FolderIconConstants.GRID_VIEW_THRESHOLD)
-                return FolderIconViewMode.ContentGridView;
-
-            // List View
-            if (rect.x > FolderIconConstants.CONTENT_VIEW_X_THRESHOLD)
-                return FolderIconViewMode.ContentListView;
-
-            // Tree View
-            return FolderIconViewMode.TreeView;
-        }
-
-        /// <summary>
-        /// アイコンの描画領域を計算する．
-        /// </summary>
-        /// <param name="rect">フォルダの矩形</param>
-        /// <param name="viewMode">表示モード</param>
-        /// <returns>アイコンの描画領域</returns>
-        private static Rect GetIconRect(Rect rect, FolderIconViewMode viewMode)
-        {
-            return viewMode switch
+            // 描画フックから例外を漏らさない（§9）
+            try
             {
-                FolderIconViewMode.TreeView => GetTreeViewIconRect(rect),
-                FolderIconViewMode.ContentListView => GetListViewIconRect(rect),
-                FolderIconViewMode.ContentGridView => GetGridViewIconRect(rect),
-                _ => throw new System.ArgumentException($"Invalid view mode: {viewMode}", nameof(viewMode))
-            };
+                DrawFolderIcon(guid, selectionRect);
+            }
+            catch (Exception e)
+            {
+                // Repaint毎に呼ばれるため、ログ洪水を防いで初回のみ報告する
+                if (_exceptionLogged) return;
+                _exceptionLogged = true;
+                Debug.LogException(e);
+            }
+        }
+
+        private static void DrawFolderIcon(string guid, Rect selectionRect)
+        {
+            if (!FolderIconSettings.instance.IsEnabled)
+                return;
+
+            var path = AssetDatabase.GUIDToAssetPath(guid);
+            if (!IsTargetPath(path) || !AssetDatabase.IsValidFolder(path))
+                return;
+
+            var icon = FolderIconResolver.Resolve(path);
+            if (icon == null)
+                return;
+
+            var iconRect = GetIconRect(selectionRect);
+            GUI.DrawTexture(iconRect, icon, ScaleMode.ScaleToFit, alphaBlend: true);
         }
 
         /// <summary>
-        /// ツリービュー用のアイコン描画領域を計算する．
+        /// Assets/ または Packages/ 配下のみ対象とする（§4.4）．
         /// </summary>
-        private static Rect GetTreeViewIconRect(Rect rect)
+        private static bool IsTargetPath(string path)
         {
-            float iconSize = rect.height + FolderIconConstants.ICON_SIZE_EXPANSION;
-            float x = rect.x + FolderIconConstants.TREE_VIEW_X_OFFSET;
-            float y = rect.y + FolderIconConstants.ICON_Y_OFFSET;
-            return new Rect(x, y, iconSize, iconSize);
+            if (string.IsNullOrEmpty(path))
+                return false;
+
+            return path == "Assets"
+                || path.StartsWith("Assets/", StringComparison.Ordinal)
+                || path.StartsWith("Packages/", StringComparison.Ordinal);
         }
 
         /// <summary>
-        /// リストビュー用のアイコン描画領域を計算する．
+        /// 表示モードに応じたアイコンの描画領域を計算する（§6.2）．
         /// </summary>
-        private static Rect GetListViewIconRect(Rect rect)
+        private static Rect GetIconRect(Rect rect)
         {
-            float iconSize = rect.height + FolderIconConstants.ICON_SIZE_EXPANSION;
-            float x = rect.x + FolderIconConstants.ICON_X_OFFSET;
-            float y = rect.y + FolderIconConstants.ICON_Y_OFFSET;
-            return new Rect(x, y, iconSize, iconSize);
-        }
+            // グリッドビュー: サムネイル領域（幅基準の正方形）に描画
+            if (rect.height > GridViewHeightThreshold)
+            {
+                float size = rect.width + IconSizeExpansion;
+                return new Rect(rect.x + IconXOffset, rect.y + IconYOffset, size, size);
+            }
 
-        /// <summary>
-        /// グリッドビュー用のアイコン描画領域を計算する．
-        /// </summary>
-        private static Rect GetGridViewIconRect(Rect rect)
-        {
-            float iconSize = rect.width + FolderIconConstants.ICON_SIZE_EXPANSION;
-            float x = rect.x + FolderIconConstants.ICON_X_OFFSET;
-            float y = rect.y + FolderIconConstants.ICON_Y_OFFSET;
-            return new Rect(x, y, iconSize, iconSize);
+            // ツリービュー / リストビュー: 行頭の標準アイコン位置に描画
+            float iconSize = rect.height + IconSizeExpansion;
+            float xOffset = rect.x > TreeViewXThreshold ? IconXOffset : TreeViewXOffset;
+            return new Rect(rect.x + xOffset, rect.y + IconYOffset, iconSize, iconSize);
         }
-        #endregion
     }
 }
-#endif
-
-
-// 参考資料：[Unity-Folder-Icons/FolderIcons/Editor/FolderIconGUI.cs](https://github.com/WooshiiDev/Unity-Folder-Icons/blob/main/FolderIcons/Editor/FolderIconGUI.cs)
